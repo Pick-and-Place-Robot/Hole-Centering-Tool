@@ -1,5 +1,7 @@
 """
-Author: Jayamadu Gammune
+Author: Pulindu Vidmal
+
+Edited by : Jayamadu Gammune
 
 This script implements a Hole Centering Tool using computer vision techniques.
 It detects circular shapes (holes) from a webcam feed and provides visual feedback
