@@ -1,25 +1,11 @@
-"""
-Author: Pulindu Vidmal
-Edited by: Jayamadu Gammune
-
-This script implements a Hole Centering Tool using computer vision techniques.
-It detects circular shapes (holes) from a webcam feed or a selected video file 
-and provides visual feedback to align these holes with a crosshair displayed on 
-the screen.
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of 
-this software and associated documentation files (the "Software"), to deal in 
-the Software without restriction, including without limitation the rights to 
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
-of the Software, and to permit persons to whom the Software is furnished to do 
-so, subject to the following conditions:
-...
-"""
-
 import cv2
 import numpy as np
 import tkinter as tk
 from tkinter import filedialog, messagebox
+
+# Global variables
+cap = None
+is_running = False  # Flag to control the video loop
 
 # Draw a crosshair at the center of the image
 def draw_crosshair(image):
@@ -31,7 +17,7 @@ def draw_crosshair(image):
 
 # Initialize the GUI for video source selection
 def select_video_source():
-    global cap
+    global cap, is_running
     source_type = source_var.get()
     
     if source_type == "Webcam":
@@ -45,13 +31,14 @@ def select_video_source():
             messagebox.showerror("File Error", "No file selected. Please select a video file or use the webcam.")
             return
     
-    # Start video processing
+    # Set running flag to True and start video processing
+    is_running = True
     process_video()
 
 # Process video for hole detection and alignment feedback
 def process_video():
-    global cap
-    while cap.isOpened():
+    global cap, is_running
+    while is_running and cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
@@ -93,14 +80,21 @@ def process_video():
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 
-    # Release resources
-    cap.release()
+    # Release resources when stopped
+    stop_video()
+
+# Stop video processing
+def stop_video():
+    global is_running, cap
+    is_running = False  # Set running flag to False
+    if cap:
+        cap.release()
     cv2.destroyAllWindows()
 
 # Setup Tkinter GUI
 root = tk.Tk()
 root.title("Hole Centering Tool - Select Video Source")
-root.geometry("300x200")
+root.geometry("300x250")
 
 source_var = tk.StringVar(value="Webcam")
 
@@ -108,10 +102,12 @@ source_var = tk.StringVar(value="Webcam")
 webcam_radio = tk.Radiobutton(root, text="Webcam", variable=source_var, value="Webcam")
 file_radio = tk.Radiobutton(root, text="Video File", variable=source_var, value="Video File")
 start_button = tk.Button(root, text="Start", command=select_video_source)
+stop_button = tk.Button(root, text="Stop", command=stop_video)  # Add Stop button
 
 webcam_radio.pack(pady=10)
 file_radio.pack(pady=10)
-start_button.pack(pady=20)
+start_button.pack(pady=10)
+stop_button.pack(pady=10)  # Pack the Stop button
 
 # Start the Tkinter event loop
 root.mainloop()
