@@ -35,9 +35,22 @@ def select_video_source():
     is_running = True
     process_video()
 
+# Handle mouse events for stop button
+def on_mouse_click(event, x, y, flags, param):
+    global is_running
+    # Check if left mouse button was clicked within the button area
+    if event == cv2.EVENT_LBUTTONDOWN:
+        # Adjust these coordinates to match where the Stop button is drawn
+        if 10 <= x <= 80 and 10 <= y <= 40:
+            print("Stop button clicked.")  # Debug message to confirm click detection
+            is_running = False
+
 # Process video for hole detection and alignment feedback
 def process_video():
     global cap, is_running
+    cv2.namedWindow("Hole Centering Tool")
+    cv2.setMouseCallback("Hole Centering Tool", on_mouse_click)
+    
     while is_running and cap.isOpened():
         ret, frame = cap.read()
         if not ret:
@@ -71,7 +84,11 @@ def process_video():
                 distance_y = b - display_center[1]
                 cv2.line(frame, (a, b), display_center, (255, 0, 0), 2)
                 cv2.putText(frame, f'Distance X: {distance_x:.2f}, Distance Y: {distance_y:.2f}',
-                            (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                            (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+        # Draw the on-screen stop button
+        cv2.rectangle(frame, (10, 10), (80, 40), (0, 0, 255), -1)  # Red rectangle as the Stop button
+        cv2.putText(frame, 'Stop', (15, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
 
         # Show the frame
         cv2.imshow('Hole Centering Tool', frame)
